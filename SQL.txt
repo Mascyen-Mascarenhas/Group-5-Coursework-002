@@ -1,0 +1,82 @@
+-- 1. Users Table: Manages user accounts and settings
+CREATE TABLE Users (
+    user_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Teams Table: Information on F1 constructors
+CREATE TABLE Teams (
+    team_id INT PRIMARY KEY AUTO_INCREMENT,
+    team_name VARCHAR(100) NOT NULL,
+    base_country VARCHAR(100),
+    principal VARCHAR(100),
+    engine VARCHAR(100)
+);
+
+-- 3. Drivers Table: Static and historical information on drivers
+CREATE TABLE Drivers (
+    driver_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    nationality VARCHAR(50),
+    bio TEXT,
+    dob DATE,
+    team_id INT,
+    FOREIGN KEY (team_id) REFERENCES Teams(team_id)
+);
+
+-- 4. Circuits Table: Track-specific details
+CREATE TABLE Circuits (
+    circuit_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    location VARCHAR(100),
+    length DECIMAL(5,3), -- e.g., 5.891 km
+    turns INT,
+    type VARCHAR(50)     -- e.g., Street, Permanent, Hybrid
+);
+
+-- 5. Seasons Table: Overview of each year
+CREATE TABLE Seasons (
+    year INT PRIMARY KEY,
+    winner_driver_id INT,
+    winner_constructor_id INT,
+    FOREIGN KEY (winner_driver_id) REFERENCES Drivers(driver_id),
+    FOREIGN KEY (winner_constructor_id) REFERENCES Teams(team_id)
+);
+
+-- 6. Races Table: Stores the information on the races
+CREATE TABLE Races (
+    race_id INT PRIMARY KEY,
+    race_name VARCHAR(100),
+    race_date DATE,
+    circuit_id INT,
+    FOREIGN KEY (circuit_id) REFERENCES Circuits(circuit_id)
+);
+
+
+-- 7. Race_Results Table: Links years, tracks, and drivers
+CREATE TABLE Race_Results (
+    result_id INT PRIMARY KEY AUTO_INCREMENT,
+    driver_id INT,
+    race_id INT,
+    year INT,
+    position INT,
+    points_earned DECIMAL(4,1),
+    status VARCHAR(50), -- e.g., Finished, DNF, DSQ
+    FOREIGN KEY (driver_id) REFERENCES Drivers(driver_id),
+    FOREIGN KEY (year) REFERENCES Seasons(year),
+    FOREIGN KEY (race_id) REFERENCES Races(race_id)
+);
+
+
+-- 8. Bookmarks Table: Stores user's favourites (Drivers, Teams, etc.)
+CREATE TABLE Bookmarks (
+    bookmark_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
+    item_id INT,        -- ID of the Driver, Team, or Circuit
+    item_type VARCHAR(50), -- 'Driver', 'Team', or 'Circuit'
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+);

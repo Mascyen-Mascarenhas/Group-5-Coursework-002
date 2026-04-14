@@ -1,4 +1,4 @@
--- 1. Users Table: Manages user accounts and settings
+-- User Data
 CREATE TABLE Users (
     user_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -7,76 +7,264 @@ CREATE TABLE Users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 2. Teams Table: Information on F1 constructors
+-- Teams Data
 CREATE TABLE Teams (
-    team_id INT PRIMARY KEY AUTO_INCREMENT,
+    team_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     team_name VARCHAR(100) NOT NULL,
     base_country VARCHAR(100),
     principal VARCHAR(100),
     engine VARCHAR(100)
 );
 
--- 3. Drivers Table: Static and historical information on drivers
+-- Drivers Data
 CREATE TABLE Drivers (
-    driver_id INT PRIMARY KEY AUTO_INCREMENT,
+    driver_id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     nationality VARCHAR(50),
-    bio TEXT,
     dob DATE,
     team_id INT,
     FOREIGN KEY (team_id) REFERENCES Teams(team_id)
 );
 
--- 4. Circuits Table: Track-specific details
+-- Circuits Data
 CREATE TABLE Circuits (
-    circuit_id INT PRIMARY KEY AUTO_INCREMENT,
+    circuit_id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     location VARCHAR(100),
-    length DECIMAL(5,3), -- e.g., 5.891 km
+    length DECIMAL(5,3),
     turns INT,
-    type VARCHAR(50)     -- e.g., Street, Permanent, Hybrid
+    type VARCHAR(50)
 );
 
--- 5. Seasons Table: Overview of each year
+-- Seasons Data
 CREATE TABLE Seasons (
-    year INT PRIMARY KEY,
-    winner_driver_id INT,
+    season_year INT PRIMARY KEY,
+    winner_driver_id VARCHAR(10),
     winner_constructor_id INT,
     FOREIGN KEY (winner_driver_id) REFERENCES Drivers(driver_id),
     FOREIGN KEY (winner_constructor_id) REFERENCES Teams(team_id)
 );
 
--- 6. Races Table: Stores the information on the races
+-- Races Data
 CREATE TABLE Races (
-    race_id INT PRIMARY KEY,
+    race_id VARCHAR(20) PRIMARY KEY,
     race_name VARCHAR(100),
     race_date DATE,
-    circuit_id INT,
+    circuit_id VARCHAR(10),
     FOREIGN KEY (circuit_id) REFERENCES Circuits(circuit_id)
 );
 
-
--- 7. Race_Results Table: Links years, tracks, and drivers
+-- Race Results Data
 CREATE TABLE Race_Results (
-    result_id INT PRIMARY KEY AUTO_INCREMENT,
-    driver_id INT,
-    race_id INT,
-    year INT,
+    result_id VARCHAR(30) PRIMARY KEY,
+    driver_id VARCHAR(10),
+    race_id VARCHAR(20),
+    season_year INT,
     position INT,
     points_earned DECIMAL(4,1),
-    status VARCHAR(50), -- e.g., Finished, DNF, DSQ
+    status VARCHAR(50),
     FOREIGN KEY (driver_id) REFERENCES Drivers(driver_id),
-    FOREIGN KEY (year) REFERENCES Seasons(year),
-    FOREIGN KEY (race_id) REFERENCES Races(race_id)
+    FOREIGN KEY (race_id) REFERENCES Races(race_id),
+    FOREIGN KEY (season_year) REFERENCES Seasons(season_year)
 );
 
-
--- 8. Bookmarks Table: Stores user's favourites (Drivers, Teams, etc.)
+-- Bookmarks Data
 CREATE TABLE Bookmarks (
-    bookmark_id INT PRIMARY KEY AUTO_INCREMENT,
+    bookmark_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     user_id INT,
-    item_id INT,        -- ID of the Driver, Team, or Circuit
-    item_type VARCHAR(50), -- 'Driver', 'Team', or 'Circuit'
+    item_id INT,
+    item_type VARCHAR(50),
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
+
+-- TEAMS Data
+INSERT INTO Teams (team_name, base_country, principal, engine) VALUES
+('Mercedes-AMG PETRONAS Formula 1 Team',       'Brackley, England',                                          'Toto Wolff',                     'Mercedes'),
+('Atlassian Williams F1 Team',                  'Grove, England',                                             'James Vowles',                   'Mercedes'),
+('BWT Alpine Formula One Team',                 'Enstone, England',                                           'Flavio Briatore / Steve Nielsen', 'Mercedes'),
+('TGR Haas F1 Team',                            'Technical Center: Banbury, England / HQ: Kannapolis, NC, USA','Ayao Komatsu',                   'Ferrari'),
+('Oracle Red Bull Racing Formula 1 Team',       'Milton Keynes, England',                                     'Laurent Mekies',                 'Red Bull-Ford'),
+('McLaren Mastercard Formula 1 Team',           'Woking, England',                                            'Andrea Stella',                  'Mercedes'),
+('Audi Revolut F1 Team',                        'Hinwil, Switzerland',                                        'Mattia Binotto / James Key',     'Audi'),
+('Cadillac Formula 1 Team',                     'Silverstone, England & USA',                                 'Graeme Lowdon',                  'Ferrari'),
+('Aston Martin Aramco Formula One Team',        'Silverstone, England',                                       'Adrian Newey',                   'Honda'),
+('Scuderia Ferrari HP Formula 1',               'Maranello, Italy',                                           'Fred Vasseur',                   'Ferrari'),
+('Visa Cash App Racing Bulls Formula One Team', 'Faenza, Italy',                                              'Alan Permane',                   'Red Bull-Ford');
+
+
+-- DRIVERS Data
+
+INSERT INTO Drivers (driver_id, name, nationality, dob, team_id) VALUES
+('GR63', 'George Russell',    'British',       '1998-02-15', 1),
+('KA12', 'Kimi Antonelli',    'Italian',       '2006-08-25', 1),
+('CL16', 'Charles Leclerc',   'Monegasque',    '1997-10-16', 10),
+('LH44', 'Lewis Hamilton',    'British',       '1985-01-07', 10),
+('LN4',  'Lando Norris',      'British',       '1999-11-13', 6),
+('OP81', 'Oscar Piastri',     'Australian',    '2001-04-06', 6),
+('EO31', 'Esteban Ocon',      'French',        '1996-09-17', 4),
+('OB87', 'Oliver Bearman',    'British',       '2005-05-08', 4),
+('PG10', 'Pierre Gasly',      'French',        '1996-02-07', 3),
+('FC43', 'Franco Colapinto',  'Argentine',     '2003-06-27', 3),
+('MV3',  'Max Verstappen',    'Dutch',         '1997-09-30', 5),
+('IH6',  'Isack Hadjar',      'French',        '2004-09-28', 5),
+('LL30', 'Liam Lawson',       'New Zealander', '2002-02-11', 11),
+('AL41', 'Arvid Lindblad',    'British',       '2007-08-08', 11),
+('NH27', 'Nico Hulkenberg',   'German',        '1987-08-19', 7),
+('GB5',  'Gabriel Bortoleto', 'Brazilian',     '2004-10-14', 7),
+('CS55', 'Carlos Sainz',      'Spanish',       '1994-09-01', 2),
+('AA23', 'Alexander Albon',   'Thai',          '1996-03-23', 2),
+('SP11', 'Sergio Perez',      'Mexican',       '1990-01-26', 8),
+('VB77', 'Valtteri Bottas',   'Finnish',       '1989-08-28', 8),
+('FA14', 'Fernando Alonso',   'Spanish',       '1981-07-29', 9),
+('LS18', 'Lance Stroll',      'Canadian',      '1998-10-29', 9);
+
+
+
+-- CIRCUITS Data
+
+INSERT INTO Circuits (circuit_id, name, location, length, turns, type) VALUES
+('MEL-AU', 'Albert Park Circuit',                'Melbourne, Australia',            5.278, 16, 'Street circuit'),
+('SHA-CN', 'Shanghai International Circuit',     'Shanghai, China',                 5.451, 16, 'Race circuit'),
+('SUZ-JP', 'Suzuka International Racing Circuit','Suzuka, Japan',                    5.807, 18, 'Race circuit'),
+('SAK-BH', 'Bahrain International Circuit',      'Sakhir, Bahrain',                 5.412, 15, 'Race circuit'),
+('JED-SA', 'Jeddah Corniche Circuit',            'Jeddah, Saudi Arabia',            6.174, 27, 'Street circuit'),
+('MIA-US', 'Miami International Autodrome',      'Miami Gardens, United States',    5.412, 19, 'Street circuit'),
+('MON-CA', 'Circuit Gilles-Villeneuve',          'Montreal, Canada',                4.361, 14, 'Street circuit'),
+('MCO-MC', 'Circuit de Monaco',                  'Monte Carlo, Monaco',             3.337, 19, 'Street circuit'),
+('BCN-ES', 'Circuit de Barcelona-Catalunya',     'Montmeló, Spain',                 4.657, 14, 'Race circuit'),
+('SPI-AT', 'Red Bull Ring',                      'Spielberg, Austria',              4.318, 10, 'Race circuit'),
+('SIL-UK', 'Silverstone Circuit',                'Silverstone, United Kingdom',     5.891, 18, 'Race circuit'),
+('SPA-BE', 'Circuit de Spa-Francorchamps',       'Stavelot, Belgium',               7.004, 20, 'Race circuit'),
+('BUD-HU', 'Hungaroring',                        'Mogyoród, Hungary',               4.381, 14, 'Race circuit'),
+('ZAN-NL', 'Circuit Zandvoort',                  'Zandvoort, Netherlands',          4.259, 14, 'Race circuit'),
+('MZN-IT', 'Autodromo Nazionale di Monza',       'Monza, Italy',                    5.793, 11, 'Race circuit'),
+('MAD-ES', 'Madring Circuit',                    'Barajas, Spain',                  5.474, 22, 'Street circuit'),
+('BAK-AZ', 'Baku City Circuit',                  'Baku, Azerbaijan',                6.003, 20, 'Street circuit'),
+('SIN-SG', 'Marina Bay Street Circuit',          'Marina Bay, Singapore',           4.940, 19, 'Street circuit'),
+('AUS-US', 'Circuit of the Americas',            'Austin, United States',           5.513, 20, 'Race circuit'),
+('MEX-MX', 'Autodromo Hermanos Rodriguez',       'Mexico City, Mexico',             4.304, 17, 'Race circuit'),
+('SAO-SR', 'Autodromo José Carlos Pace',         'São Paulo, Brazil',               4.309, 15, 'Race circuit'),
+('LVG-US', 'Las Vegas Strip Circuit',            'Paradise, United States',         6.201, 17, 'Street circuit'),
+('LUG-QA', 'Lusail International Circuit',       'Lusail, Qatar',                   5.419, 16, 'Race circuit'),
+('ABU-AE', 'Yas Marina Circuit',                 'Abu Dhabi, United Arab Emirates', 5.281, 16, 'Race circuit');
+ 
+
+-- SEASONS Data
+
+INSERT INTO Seasons (season_year, winner_driver_id, winner_constructor_id) VALUES
+(2017, 'LH44', 1),
+(2018, 'LH44', 1),
+(2019, 'LH44', 1),
+(2020, 'LH44', 1),
+(2021, 'MV3',  5),
+(2022, 'MV3',  5),
+(2023, 'MV3',  5),
+(2024, 'MV3',  5),
+(2025, 'LN4',  6),
+(2026);
+
+
+
+-- RACES Data
+
+INSERT INTO Races (race_id, race_name, race_date, circuit_id) VALUES
+('AustraliaGP',   'Qatar Airways Australian Grand Prix',            '2026-03-08', 'MEL-AU'),
+('ChinaGP',       'Heineken Chinese Grand Prix',                    '2026-03-15', 'SHA-CN'),
+('JapanGP',       'Aramco Japanese Grand Prix',                     '2026-03-29', 'SUZ-JP'),
+('MiamiGP',       'Crypto.com Miami Grand Prix',                    '2026-05-03', 'MIA-US'),
+('CanadaGP',      'Lenovo Grand Prix du Canada',                    '2026-05-24', 'MON-CA'),
+('MonacoGP',      'Louis Vuitton Grand Prix de Monaco',             '2026-06-07', 'MCO-MC'),
+('BarcelonaGP',   'MSC Cruises Gran Premio de Barcelona-Catalunya', '2026-06-14', 'BCN-ES'),
+('AustriaGP',     'Lenovo Austrian Grand Prix',                     '2026-06-28', 'SPI-AT'),
+('BritishGP',     'Pirelli British Grand Prix',                     '2026-07-05', 'SIL-UK'),
+('BelgiumGP',     'Moët & Chandon Belgian Grand Prix',              '2026-07-19', 'SPA-BE'),
+('HungaryGP',     'AWS Hungarian Grand Prix',                       '2026-07-26', 'BUD-HU'),
+('NetherlandsGP', 'Heineken Dutch Grand Prix',                      '2026-08-23', 'ZAN-NL'),
+('ItalyGP',       'Pirelli Gran Premio D''Italia',                   '2026-09-06', 'MZN-IT'),
+('MadridGP',      'Tag Heuer Gran Premio de España',                '2026-09-13', 'MAD-ES'),
+('AzerbaijanGP',  'Qatar Airways Azerbaijan Grand Prix',             '2026-09-26', 'BAK-AZ'),
+('SingaporeGP',   'Singapore Airlines Singapore Grand Prix',         '2026-10-11', 'SIN-SG'),
+('AmericaGP',     'MSC Cruises United States Grand Prix',            '2026-10-25', 'AUS-US'),
+('MexicoGP',      'Gran Premio de la Ciudad de México',             '2026-11-01', 'MEX-MX'),
+('BrazilGP',      'MSC Cruises Grande Prêmio de São Paulo',         '2026-11-08', 'SAO-SR'),
+('LasVegasGP',    'Heineken Las Vegas Grand Prix',                   '2026-11-21', 'LVG-US'),
+('QatarGP',       'Qatar Airways Qatar Grand Prix',                  '2026-11-29', 'LUG-QA'),
+('AbuDhabiGP',    'Etihad Airways Abu Dhabi Grand Prix',             '2026-12-06', 'ABU-AE');
+
+
+
+-- RACE RESULTS Data
+
+INSERT INTO Race_Results (result_id, driver_id, race_id, season_year, position, points_earned, status) VALUES
+-- Australian GP
+('2026-AUS-GR63', 'GR63', 'AustraliaGP', 2026,  1, 25.0, 'Finished'),
+('2026-AUS-KA12', 'KA12', 'AustraliaGP', 2026,  2, 18.0, 'Finished'),
+('2026-AUS-CL16', 'CL16', 'AustraliaGP', 2026,  3, 15.0, 'Finished'),
+('2026-AUS-LH44', 'LH44', 'AustraliaGP', 2026,  4, 12.0, 'Finished'),
+('2026-AUS-LN4',  'LN4',  'AustraliaGP', 2026,  5, 10.0, 'Finished'),
+('2026-AUS-MV3',  'MV3',  'AustraliaGP', 2026,  6,  8.0, 'Finished'),
+('2026-AUS-OB87', 'OB87', 'AustraliaGP', 2026,  7,  7.0, 'Finished'),
+('2026-AUS-AL41', 'AL41', 'AustraliaGP', 2026,  8,  5.0, 'Finished'),
+('2026-AUS-GB5',  'GB5',  'AustraliaGP', 2026,  9,  3.0, 'Finished'),
+('2026-AUS-PG10', 'PG10', 'AustraliaGP', 2026, 10,  2.0, 'Finished'),
+('2026-AUS-EO31', 'EO31', 'AustraliaGP', 2026, 11,  0.0, 'Finished'),
+('2026-AUS-AA23', 'AA23', 'AustraliaGP', 2026, 12,  0.0, 'Finished'),
+('2026-AUS-LL30', 'LL30', 'AustraliaGP', 2026, 13,  0.0, 'Finished'),
+('2026-AUS-FC43', 'FC43', 'AustraliaGP', 2026, 14,  0.0, 'Finished'),
+('2026-AUS-CS55', 'CS55', 'AustraliaGP', 2026, 15,  0.0, 'Finished'),
+('2026-AUS-SP11', 'SP11', 'AustraliaGP', 2026, 16,  0.0, 'Finished'),
+('2026-AUS-LS18', 'LS18', 'AustraliaGP', 2026, 17,  0.0, '+15 laps'),
+('2026-AUS-FA14', 'FA14', 'AustraliaGP', 2026, 18,  0.0, 'DNF'),
+('2026-AUS-VB77', 'VB77', 'AustraliaGP', 2026, 19,  0.0, 'DNF'),
+('2026-AUS-IH6',  'IH6',  'AustraliaGP', 2026, 20,  0.0, 'DNF'),
+('2026-AUS-OP81', 'OP81', 'AustraliaGP', 2026, 21,  0.0, 'DNS'),
+('2026-AUS-NH27', 'NH27', 'AustraliaGP', 2026, 22,  0.0, 'DNS'),
+
+-- Chinese GP
+('2026-CHN-KA12', 'KA12', 'ChinaGP', 2026,  1, 25.0, 'Finished'),
+('2026-CHN-GR63', 'GR63', 'ChinaGP', 2026,  2, 18.0, 'Finished'),
+('2026-CHN-LH44', 'LH44', 'ChinaGP', 2026,  3, 15.0, 'Finished'),
+('2026-CHN-CL16', 'CL16', 'ChinaGP', 2026,  4, 12.0, 'Finished'),
+('2026-CHN-OB87', 'OB87', 'ChinaGP', 2026,  5, 10.0, 'Finished'),
+('2026-CHN-PG10', 'PG10', 'ChinaGP', 2026,  6,  8.0, 'Finished'),
+('2026-CHN-LL30', 'LL30', 'ChinaGP', 2026,  7,  6.0, 'Finished'),
+('2026-CHN-IH6',  'IH6',  'ChinaGP', 2026,  8,  4.0, 'Finished'),
+('2026-CHN-CS55', 'CS55', 'ChinaGP', 2026,  9,  3.0, 'Finished'),
+('2026-CHN-FC43', 'FC43', 'ChinaGP', 2026, 10,  2.0, 'Finished'),
+('2026-CHN-NH27', 'NH27', 'ChinaGP', 2026, 11,  1.0, 'Finished'),
+('2026-CHN-AL41', 'AL41', 'ChinaGP', 2026, 12,  1.0, 'Finished'),
+('2026-CHN-VB77', 'VB77', 'ChinaGP', 2026, 13,  1.0, 'Finished'),
+('2026-CHN-EO31', 'EO31', 'ChinaGP', 2026, 14,  1.0, 'Finished'),
+('2026-CHN-SP11', 'SP11', 'ChinaGP', 2026, 15,  1.0, 'Finished'),
+('2026-CHN-MV3',  'MV3',  'ChinaGP', 2026, 16,  0.0, 'DNF'),
+('2026-CHN-FA14', 'FA14', 'ChinaGP', 2026, 17,  0.0, 'DNF'),
+('2026-CHN-LS18', 'LS18', 'ChinaGP', 2026, 18,  0.0, 'DNF'),
+('2026-CHN-OP81', 'OP81', 'ChinaGP', 2026, 19,  0.0, 'DNS'),
+('2026-CHN-LN4',  'LN4',  'ChinaGP', 2026, 20,  0.0, 'DNS'),
+('2026-CHN-GB5',  'GB5',  'ChinaGP', 2026, 21,  0.0, 'DNS'),
+('2026-CHN-AA23', 'AA23', 'ChinaGP', 2026, 22,  0.0, 'DNS'),
+
+-- Japanese GP
+('2026-JPN-KA12', 'KA12', 'JapanGP', 2026,  1, 25.0, 'Finished'),
+('2026-JPN-OP81', 'OP81', 'JapanGP', 2026,  2, 18.0, 'Finished'),
+('2026-JPN-CL16', 'CL16', 'JapanGP', 2026,  3, 15.0, 'Finished'),
+('2026-JPN-GR63', 'GR63', 'JapanGP', 2026,  4, 12.0, 'Finished'),
+('2026-JPN-LN4',  'LN4',  'JapanGP', 2026,  5, 10.0, 'Finished'),
+('2026-JPN-LH44', 'LH44', 'JapanGP', 2026,  6,  8.0, 'Finished'),
+('2026-JPN-PG10', 'PG10', 'JapanGP', 2026,  7,  6.0, 'Finished'),
+('2026-JPN-MV3',  'MV3',  'JapanGP', 2026,  8,  4.0, 'Finished'),
+('2026-JPN-LL30', 'LL30', 'JapanGP', 2026,  9,  2.0, 'Finished'),
+('2026-JPN-EO31', 'EO31', 'JapanGP', 2026, 10,  1.0, 'Finished'),
+('2026-JPN-NH27', 'NH27', 'JapanGP', 2026, 11,  0.0, 'Finished'),
+('2026-JPN-IH6',  'IH6',  'JapanGP', 2026, 12,  0.0, 'Finished'),
+('2026-JPN-GB5',  'GB5',  'JapanGP', 2026, 13,  0.0, 'Finished'),
+('2026-JPN-AL41', 'AL41', 'JapanGP', 2026, 14,  0.0, 'Finished'),
+('2026-JPN-CS55', 'CS55', 'JapanGP', 2026, 15,  0.0, 'Finished'),
+('2026-JPN-FC43', 'FC43', 'JapanGP', 2026, 16,  0.0, 'Finished'),
+('2026-JPN-SP11', 'SP11', 'JapanGP', 2026, 17,  0.0, 'Finished'),
+('2026-JPN-FA14', 'FA14', 'JapanGP', 2026, 18,  1.0, 'Finished'),
+('2026-JPN-VB77', 'VB77', 'JapanGP', 2026, 19,  1.0, 'Finished'),
+('2026-JPN-AA23', 'AA23', 'JapanGP', 2026, 20,  0.0, 'Finished'),
+('2026-JPN-LS18', 'LS18', 'JapanGP', 2026, 21,  0.0, 'DNF'),
+('2026-JPN-OB87', 'OB87', 'JapanGP', 2026, 22,  0.0, 'DNF');
